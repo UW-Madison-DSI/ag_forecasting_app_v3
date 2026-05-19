@@ -35,27 +35,27 @@ DISEASE_OPTIONS = {
     "Gray Leaf Spot (corn)": {
         "risk_field": "gls_risk",
         "class_field": "gls_risk_class",
-        "model_name": "gls",
+        "model_name": "gls_risk",
     },
     "Frogeye Leaf Spot (soybean)": {
         "risk_field": "fe_risk",
         "class_field": "fe_risk_class",
-        "model_name": "fe",
+        "model_name": "frogeye_leaf_spot",
     },
     "White Mold — Non-irrigated (soybean)": {
         "risk_field": "whitemold_nirr_risk",
         "class_field": "whitemold_nirr_risk_class",
-        "model_name": "whitemold",
+        "model_name": "whitemold_non_irrigated",
     },
     "White Mold — Irrigated 30in (soybean)": {
         "risk_field": "whitemold_irr_30in_risk",
         "class_field": "whitemold_irr_30in_class",
-        "model_name": "whitemold",
+        "model_name": "whitemold_irrigated",
     },
     "White Mold — Irrigated 15in (soybean)": {
         "risk_field": "whitemold_irr_15in_risk",
         "class_field": "whitemold_irr_15in_class",
-        "model_name": "whitemold",
+        "model_name": "whitemold_irrigated",
     },
 }
 
@@ -75,6 +75,17 @@ CLASS_ORDER = ["High", "Moderate", "Low", "No Risk", "Inactive", "Unknown"]
 
 # Default map center: roughly the geographic middle of Wisconsin.
 WI_CENTER = {"lat": 44.6, "lon": -89.7}
+
+# Default station map height (pixels). Users can override in the
+# sidebar's "Map style" expander.
+MAP_DEFAULT_HEIGHT = 720
+
+# Default station marker radius (pixels).
+MAP_DEFAULT_MARKER_SIZE = 18
+
+# Emoji choices for the station marker overlay. The first is the
+# default. Pick anything that reads as "weather station" to you.
+ICON_CHOICES = ["📡", "🌡️", "🌤", "☁️", "⛅", "🌦", "📍", "🌽"]
 
 # Common Wisconet weather fields shown in the Weather tab. These are
 # wiscopy field names — extend or trim to taste.

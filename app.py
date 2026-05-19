@@ -133,8 +133,8 @@ def render_forecast_tab(selected_date: date, risk_days: int, disease_label: str)
     """Render the Disease Forecast tab: metrics, map, model info, table.
 
     Also stashes the (station_id → station_name) mapping in
-    ``st.session_state`` so the Weather tab can populate its picker
-    without re-fetching.
+    ``st.session_state`` so the Weather and Risk Trends tabs can
+    populate their pickers without re-fetching.
     """
     opts = DISEASE_OPTIONS[disease_label]
     risk_field = opts["risk_field"]
@@ -155,7 +155,7 @@ def render_forecast_tab(selected_date: date, risk_days: int, disease_label: str)
         st.warning("No station data returned for this date.")
         return
 
-    # Share station roster with the Weather tab via session_state.
+    # Share station roster with the Weather and Risk Trends tabs.
     st.session_state["station_options"] = dict(
         zip(df["station_id"].astype(str), df["station_name"].astype(str))
     )
