@@ -1,18 +1,19 @@
-# Docker Compose config for the static dashboard deployment.
+# Deploy config that follows the COA-builder Traefik pattern.
 #
-# Architecture:
-#   • Single `web` service = nginx serving site/ + reverse-proxying
-#     /api/forecast to the UW–Madison Ag Forecasting API. Traefik
-#     terminates TLS and routes HTTPS traffic to it.
-#   • The Python build runs at image build time (see Dockerfile) and
-#     bakes site/data/latest.json into the image. Rebuild + redeploy
-#     to refresh data:
-#         docker compose build --no-cache && docker compose up -d
+# Customize three things before deploying:
+#   1. Replace `moros-ag-forecasting-web` with a router name unique to
+#      your Traefik instance (the existing convention is
+#      `<username>-<project>-web`).
+#   2. Replace the Host(...) value with your real public hostname.
+#   3. Make sure `traefik_network` (the external network Traefik
+#      listens on) exists on the VM — if not:
+#          docker network create traefik_network
+#   4. `myresolver` must match the certresolver name configured on
+#      your Traefik instance (often `letsencrypt`).
 #
-# Change these to match your environment before deploying:
-#   1. ROUTER_NAME           — must be unique on the Traefik instance
-#   2. Host(...) label       — your real public hostname
-#   3. certresolver          — match what your Traefik is configured for
+# Daily data refresh:  cron'd `docker compose up -d --build` on the
+# host. The Dockerfile re-runs build_site.py at build time, baking
+# fresh disease + biomass + weather snapshots into the image.
 
 services:
   web:
@@ -25,7 +26,6 @@ services:
     labels:
       - "traefik.enable=true"
 
-      # ↓↓↓ replace the router name + hostname with yours ↓↓↓
       - "traefik.http.routers.moros-ag-forecasting-web.rule=Host(`ag-forecasting.services.dsi.wisc.edu`)"
       - "traefik.http.routers.moros-ag-forecasting-web.entrypoints=websecure"
       - "traefik.http.routers.moros-ag-forecasting-web.tls=true"

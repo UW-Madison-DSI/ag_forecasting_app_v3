@@ -2,9 +2,11 @@ streamlit==1.47.1
 requests>=2.31
 pandas>=2.0
 plotly>=5.18
-streamlit>=1.35       
-requests>=2.31        
-pandas>=2.0           
-folium>=0.16          
+streamlit>=1.35
+folium>=0.16
 streamlit-folium>=0.20
 wiscopy>=0.1.0
+
+# Static-site / Docker deployment
+fastapi>=0.110
+uvicorn[standard]>=0.27

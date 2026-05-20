@@ -7,10 +7,12 @@
   # ... and the proxy function under ./netlify/functions
   functions = "netlify/functions"
 
-# Friendly URL for the proxy. Browser fetches /api/forecast?date=…
-# which Netlify rewrites to the function endpoint.
+# Friendly URL for the proxy. Browser fetches /proxy/forecast?…
+# which Netlify rewrites to the function endpoint. Matches the
+# Docker deploy's nginx /proxy/ → uvicorn route so the same JS
+# client works on both targets unchanged.
 [[redirects]]
-  from   = "/api/forecast"
+  from   = "/proxy/forecast"
   to     = "/.netlify/functions/forecast"
   status = 200
 

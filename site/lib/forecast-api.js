@@ -9,13 +9,14 @@
 (function (root) {
   "use strict";
 
-  // Preferred: Netlify Function proxy at /api/forecast. The proxy
-  // adds CORS headers the upstream API doesn't provide, so the browser
-  // can fetch any forecast date without a rebuild.
+  // Preferred: server-side proxy at /proxy/forecast.
+  //   • Docker deploy   → nginx → FastAPI backend (backend/main.py)
+  //   • Netlify deploy  → /proxy/forecast rewrite → netlify/functions/forecast.js
+  // Both handle CORS for us; the browser only talks same-origin.
   //
-  // Fallback: direct upstream URL — useful when running outside Netlify
-  // and the API happens to allow the origin (rare; mostly fails CORS).
-  const PROXY_URL  = "/api/forecast";
+  // Fallback: direct upstream URL — useful for Node tests, almost
+  // never works in a real browser because of CORS.
+  const PROXY_URL  = "/proxy/forecast";
   const DIRECT_URL =
     "https://connect.doit.wisc.edu/ag_forecasting_api/v2/ag_models_wrappers/wisconet_g";
 
