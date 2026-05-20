@@ -1,0 +1,22 @@
+# Keep the Docker build context lean.
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.idea/
+.vscode/
+.git/
+.github/
+node_modules/
+*.log
+
+# Streamlit local state — irrelevant to the static deployment.
+.streamlit/cache/
+
+# Local snapshot — the Dockerfile regenerates it inside the builder stage.
+site/data/
+
+# Optional: skip the Streamlit-only entry point and ancillary files
+app.py
+README.md
+ONBOARDING.md

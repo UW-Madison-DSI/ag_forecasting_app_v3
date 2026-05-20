@@ -1,0 +1,35 @@
+# Netlify config — publishes the static site and exposes the
+# forecast-proxy function at /api/forecast.
+
+[build]
+  # The static site lives under ./site
+  publish = "site"
+  # ... and the proxy function under ./netlify/functions
+  functions = "netlify/functions"
+
+# Friendly URL for the proxy. Browser fetches /api/forecast?date=…
+# which Netlify rewrites to the function endpoint.
+[[redirects]]
+  from   = "/api/forecast"
+  to     = "/.netlify/functions/forecast"
+  status = 200
+
+# Long cache on static assets; HTML stays uncached so updates show fast.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/lib/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[functions]
+  # Use the modern Node runtime (default on new sites, set explicitly here).
+  node_bundler = "esbuild"

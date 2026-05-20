@@ -1,0 +1,39 @@
+# Docker Compose config for the static dashboard deployment.
+#
+# Architecture:
+#   • Single `web` service = nginx serving site/ + reverse-proxying
+#     /api/forecast to the UW–Madison Ag Forecasting API. Traefik
+#     terminates TLS and routes HTTPS traffic to it.
+#   • The Python build runs at image build time (see Dockerfile) and
+#     bakes site/data/latest.json into the image. Rebuild + redeploy
+#     to refresh data:
+#         docker compose build --no-cache && docker compose up -d
+#
+# Change these to match your environment before deploying:
+#   1. ROUTER_NAME           — must be unique on the Traefik instance
+#   2. Host(...) label       — your real public hostname
+#   3. certresolver          — match what your Traefik is configured for
+
+services:
+  web:
+    build: .
+    image: ag-forecasting-web:latest
+    container_name: ag-forecasting-web
+    restart: unless-stopped
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+
+      # ↓↓↓ replace the router name + hostname with yours ↓↓↓
+      - "traefik.http.routers.moros-ag-forecasting-web.rule=Host(`ag-forecasting.services.dsi.wisc.edu`)"
+      - "traefik.http.routers.moros-ag-forecasting-web.entrypoints=websecure"
+      - "traefik.http.routers.moros-ag-forecasting-web.tls=true"
+      - "traefik.http.routers.moros-ag-forecasting-web.tls.certresolver=myresolver"
+      - "traefik.http.services.moros-ag-forecasting-web.loadbalancer.server.port=80"
+    networks:
+      - traefik_network
+
+networks:
+  traefik_network:
+    external: true

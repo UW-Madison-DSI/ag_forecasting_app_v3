@@ -43,12 +43,65 @@
     return "High";
   }
 
+  function dayOfYear(date) {
+    const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+    const here = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    return Math.floor((here - start) / 86400000);
+  }
+
+  /**
+   * Replay the biomass model for one station using a bundled daily
+   * weather series. Returns {biomass, gddTotal, precipTotalMm} or null
+   * if the planting/forecast window can't be evaluated.
+   *
+   * @param {{start:string, tavg_f:number[], precip_in:number[]}} series
+   * @param {string} plantDateIso  "YYYY-MM-DD"
+   * @param {string} forecastDateIso  "YYYY-MM-DD"
+   * @param {number=} fallbackPrecipMm  Used if the series has no precip data.
+   */
+  function biomassFromWeatherSeries(series, plantDateIso, forecastDateIso, fallbackPrecipMm) {
+    if (!series || !series.tavg_f || !series.start) return null;
+    const startD = new Date(series.start + "T00:00:00Z");
+    const plantD = new Date(plantDateIso + "T00:00:00Z");
+    const fcstD  = new Date(forecastDateIso + "T00:00:00Z");
+
+    const day = 86400000;
+    const plantIdx = Math.max(0, Math.round((plantD - startD) / day));
+    const fcstIdx  = Math.min(series.tavg_f.length - 1, Math.round((fcstD - startD) / day));
+    if (plantIdx > fcstIdx) return null;
+
+    let cumulGdd = 0;
+    let cumulPrecipIn = 0;
+    let precipObserved = false;
+    for (let i = plantIdx; i <= fcstIdx; i++) {
+      const tavgF = series.tavg_f[i];
+      if (tavgF != null) {
+        const tavgC = fahrenheitToCelsius(tavgF);
+        cumulGdd += Math.max(0, tavgC);
+      }
+      const p = series.precip_in ? series.precip_in[i] : null;
+      if (p != null) {
+        cumulPrecipIn += p;
+        if (p > 0) precipObserved = true;
+      }
+    }
+
+    const cumulPrecipMm = precipObserved
+      ? inchesToMm(cumulPrecipIn)
+      : (fallbackPrecipMm != null ? fallbackPrecipMm : 0);
+
+    const biomass = predictRyeBiomass(dayOfYear(plantD), cumulPrecipMm, cumulGdd);
+    return { biomass, gddTotal: cumulGdd, precipTotalMm: cumulPrecipMm };
+  }
+
   root.Biomass = {
     predictRyeBiomass,
     fahrenheitToCelsius,
     inchesToMm,
     dailyGddCelsius,
     classifyBiomass,
+    biomassFromWeatherSeries,
+    dayOfYear,
     COEF,
   };
 })(window);

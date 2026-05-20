@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wisconsin Crop Disease Risk Forecast</title>
 
-  <!-- Leaflet (open-source map library, no API token needed). -->
+  <!-- Leaflet (open-source map, no API token needed). -->
   <link rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         crossorigin="anonymous">
@@ -15,8 +15,7 @@
 <body>
 
   <header class="site-header">
-    <a href="https://www.wisc.edu/" class="brand-link"
-       target="_blank" rel="noopener">
+    <a href="https://www.wisc.edu/" class="brand-link" target="_blank" rel="noopener">
       <img src="assets/uw-logo-horizontal-color-web-digital.png"
            alt="University of Wisconsin–Madison"
            class="brand-logo">
@@ -35,9 +34,30 @@
         <span>Model</span>
         <select id="model-select"></select>
       </label>
+
+      <label class="control">
+        <span>Forecast date</span>
+        <input type="date" id="forecast-date-input">
+      </label>
+
+      <label class="control">
+        <span>Planting date <small>(biomass)</small></span>
+        <input type="date" id="planting-date-input">
+      </label>
+
+      <div class="control control-actions">
+        <span>&nbsp;</span>
+        <button id="run-btn" type="button" class="run-btn"
+                title="Re-fetch the forecast for the selected date via the proxy">
+          ▶ Run
+        </button>
+      </div>
+
       <div class="control-meta">
         <div id="forecast-date"></div>
         <div id="generated-at" class="muted"></div>
+        <div id="date-status" class="muted"></div>
+        <div id="data-source" class="muted source-badge"></div>
       </div>
     </section>
 
@@ -55,23 +75,45 @@
         <table id="station-table"></table>
       </div>
     </details>
+
+    <section class="weather-wrapper">
+      <header class="weather-header">
+        <h2>🌤 Weather at station</h2>
+        <label class="control">
+          <span>Station</span>
+          <select id="weather-station"></select>
+        </label>
+      </header>
+      <div class="weather-chart-container">
+        <p class="weather-empty muted" style="display:none">
+          No weather series bundled for this station.
+        </p>
+        <canvas id="weather-chart"></canvas>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <p>
-      Source: UW–Madison Ag Forecasting API
+      Source: UW–Madison Ag Forecasting API + Wisconet
       <span class="sep">·</span>
-      Built nightly from <code>build_site.py</code>
+      Built daily via <code>build_site.py</code>
+      <span class="sep">·</span>
+      Disease forecasts re-fetched live on date change
     </p>
   </footer>
 
-  <!-- Map library. -->
+  <!-- External libs (CDN). -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
           crossorigin="anonymous"></script>
 
   <!-- Local modules. Loaded in dependency order. -->
   <script src="lib/biomass.js"></script>
+  <script src="lib/forecast-api.js"></script>
   <script src="lib/map.js"></script>
+  <script src="lib/weather.js"></script>
   <script src="lib/render.js"></script>
   <script src="lib/app.js"></script>
 </body>

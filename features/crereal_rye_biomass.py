@@ -208,10 +208,18 @@ def biomass_timeseries(
             f"{list(wide.columns)}. Update BIOMASS_TEMP_FIELD in features/config.py."
         )
 
+    # Drop any timezone info so we can compare against naive plant_date.
+    # wiscopy returns tz-aware timestamps (US/Central); the dates the user
+    # picks are naive — keeping both naive avoids tz mismatch errors.
+    if wide.index.tz is not None:
+        wide.index = wide.index.tz_localize(None)
+
     # Daily Tavg (°F) — works for both daily_* and sub-daily fields.
     by_date = wide[temp_field].groupby(wide.index.normalize())
     daily = pd.DataFrame({"tavg_f": by_date.mean()})
     daily.index = pd.DatetimeIndex(daily.index)
+    if daily.index.tz is not None:
+        daily.index = daily.index.tz_localize(None)
 
     plant_ts = pd.Timestamp(plant_date).normalize()
     daily = daily[daily.index >= plant_ts]
@@ -226,6 +234,8 @@ def biomass_timeseries(
     if precip_field and precip_field in wide.columns:
         precip_in = wide[precip_field].groupby(wide.index.normalize()).sum()
         precip_in.index = pd.DatetimeIndex(precip_in.index)
+        if precip_in.index.tz is not None:
+            precip_in.index = precip_in.index.tz_localize(None)
         precip_in = precip_in.reindex(daily.index, fill_value=0.0)
         daily["precip_mm"] = inches_to_mm(precip_in)
         daily["precip_total_mm"] = daily["precip_mm"].fillna(0.0).cumsum()
