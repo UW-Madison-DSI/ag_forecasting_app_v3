@@ -143,7 +143,63 @@ def sidebar_controls() -> tuple[date, int, str]:
         if st.button("🔄 Refresh data"):
             fetch_forecast.clear()
             st.rerun()
+
+        _render_ibm_forecast_mock()
     return selected_date, risk_days, disease_label
+
+
+def _render_ibm_forecast_mock() -> None:
+    """Sidebar mock-up for the upcoming IBM-weather custom-location forecast.
+
+    Pure UI placeholder — the buttons are disabled until the IBM API
+    credentials are configured server-side and a backend handler is
+    wired into ``backend/main.py``. Keeps the affordance visible so
+    users know the feature is on the roadmap.
+    """
+    st.divider()
+    with st.expander("🌐 Custom-location forecast (IBM)", expanded=False):
+        st.caption(
+            "🚧 **Coming soon** — run any disease model at an arbitrary "
+            "lat / lon (not just a Wisconet station) using IBM Weather "
+            "Company data instead of Wisconet."
+        )
+
+        col_lat, col_lon = st.columns(2)
+        with col_lat:
+            st.text_input(
+                "Latitude",
+                placeholder="43.0747",
+                disabled=True,
+                key="ibm_lat_mock",
+            )
+        with col_lon:
+            st.text_input(
+                "Longitude",
+                placeholder="-89.4012",
+                disabled=True,
+                key="ibm_lon_mock",
+            )
+
+        st.button(
+            "📍 Pin location on map",
+            disabled=True,
+            use_container_width=True,
+            help="Click any point on the map to capture lat / lon.",
+        )
+        st.button(
+            "⚡ Run IBM forecast",
+            type="primary",
+            disabled=True,
+            use_container_width=True,
+            help="Disabled until IBM API credentials are configured on the server.",
+        )
+
+        st.caption(
+            "Planned backend flow:  pinned point → IBM Weather Company API "
+            "(hourly temp, RH, precip) → same NLS disease models → risk "
+            "class for that location.  Requires `IBM_WEATHER_API_KEY` set "
+            "in the server environment."
+        )
 
 
 def _color_tile(col, color: str, label: str, value, tooltip: str = "") -> None:

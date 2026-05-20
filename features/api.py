@@ -1,5 +1,7 @@
 """Cached HTTP client for the UW–Madison Ag Forecasting API."""
 
+from datetime import date, timedelta
+
 import requests
 import streamlit as st
 
@@ -19,26 +21,43 @@ from features.config import (
 def fetch_forecast(forecasting_date: str, risk_days: int = 1) -> dict:
     """Fetch a daily risk forecast for every Wisconet station.
 
-    Cached on disk for 24 h (see ``CACHE_TTL_SECONDS``) keyed by
-    ``(forecasting_date, risk_days)``, so the network call happens at
-    most once per day per combination even across app restarts. Call
-    ``fetch_forecast.clear()`` to force a refetch (the sidebar's
-    "Refresh data" button does this).
+    **Date semantics.** The user passes the day they want a forecast
+    *for* (e.g. "show me May 18's risk"). Internally the upstream API
+    treats its ``forecasting_date`` parameter as the model-run date and
+    returns a forecast for ``model_run_date + 1``. So to deliver a
+    forecast labeled May 18 we have to query the API with May 17.
+    This shift is applied here once; every caller (Streamlit app,
+    backend proxy, build_site.py) gets the intuitive behavior.
+
+    Cached on disk for 24 h (see ``CACHE_TTL_SECONDS``) keyed by the
+    user's target date, so the network call happens at most once per
+    day per combination across app restarts.
 
     Args:
-        forecasting_date: ISO date string, e.g. ``"2026-07-15"``.
+        forecasting_date: ISO date string of the day to forecast FOR
+            (e.g. ``"2026-05-18"`` → the forecast for May 18).
         risk_days: Forecast horizon in days (1–7 per the API).
 
     Returns:
-        The parsed JSON FeatureCollection-style payload.
+        The parsed JSON FeatureCollection-style payload. The inner
+        ``forecasting_date`` field on each timeseries entry will match
+        the ``forecasting_date`` argument the caller passed in.
 
     Raises:
         requests.HTTPError: Non-2xx response from the API.
         requests.RequestException: Network/transport failure.
     """
+    # Shift the user's "forecast target date" → API's "model-run date".
+    try:
+        target = date.fromisoformat(forecasting_date)
+        query_date = (target - timedelta(days=1)).isoformat()
+    except ValueError:
+        # Pass non-ISO strings through unchanged — let the API reject them.
+        query_date = forecasting_date
+
     response = requests.get(
         API_URL,
-        params={"forecasting_date": forecasting_date, "risk_days": risk_days},
+        params={"forecasting_date": query_date, "risk_days": risk_days},
         headers={"accept": "application/json"},
         timeout=60,
     )
