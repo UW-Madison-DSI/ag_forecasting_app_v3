@@ -17,6 +17,7 @@ Supported disease models:
 - Gray Leaf Spot (corn)
 - Frogeye Leaf Spot (soybean)
 - White Mold — Non-irrigated / Irrigated 30 in / Irrigated 15 in (soybean)
+- Cerela Rye Biomass
 
 ## Quick start
 
